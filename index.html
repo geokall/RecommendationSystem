@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html>
+<!--
+*User is able to search only typing alphanumerical. Only english letters and non-special characters.
+*User must type at least 3 chars.
+*User must rate at least 2 movies and max 5.
+*User is able to re-rate the same movies but not more than 5. Alert message in this case.
+*Calculation button once is clicked, it gets disabled. Need to re-rate to be enabled again.
+*If none filtered user found with more than 0.7 pearson, alert message is shown.
+ -->
+
+<!-- All the steps are described in every function, from 1) up to 13) -->
+
+<head>
+    <meta charset="utf-8">
+    <title>Find me some good movies</title>
+</head>
+
+<body>
+<h2>Σύστημα παροχής προτάσεων ταινιών.</h2>
+<h3>Αναζητήστε ταινία με τουλάχιστον 3 χαρακτήρες.</h3>
+<h3>Για να προταθούν ταινίες, πρέπει να βαθμολογήσετε απο 2 έως και 5 ταινίες.</h3>
+<h3>Αριστερά θα βρείτε τα αποτελέσματα της αναζήτησης των ταινιών και δεξιά τα αποτελέσματα των προτάσεων.</h3>
+
+<!--Allow only alphanumeric, space and hyphen(-) -->
+<input type="text" placeholder="Ταινία ή στοιχείο ταινίας" oninput="isTextEnabled(value);"
+       onkeyup="this.value = this.value.replace(/[^a-zA-Z0-9 -]/g, '')"
+       id="searchMovies">
+<input type="button" value="Αναζήτηση" disabled id="searchButtonMovies" onclick="onSearchButtonMovies()">
+<input type="button" value="Προτάσεις" disabled id="calculate" onclick="onCalculateButton()">
+
+<div id="tableArea"></div>
+
+</body>
+<script type="text/javascript">
+
+    let arrayOfUserRated = [];
+    let arrayOfUserMovieRatedFromInput = [];
+
+    async function getRatings() {
+        try {
+            const response = await fetch('http://62.217.127.19:8010/ratings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    "movieList": [...new Set(arrayOfUserRated)]
+                })
+            });
+
+            const parsedResponse = await response.json();
+
+            let arrayOfFirstElements = [];
+
+            let mapOfMovieRating = arrayOfUserMovieRatedFromInput.map(user => (
+                {
+                    movieId: user.movieId,
+                    rating: user.rating
+                }
+            ));
+
+            let first5kElementsOfEachMovie = sliceElements(parsedResponse);
+
+            console.log(first5kElementsOfEachMovie);
+
+            for (let i = 0; i < first5kElementsOfEachMovie.length; i++) {
+                let firstResponseArray = first5kElementsOfEachMovie[i];
+                console.log(firstResponseArray)
+
+                for (let j = 0; j < firstResponseArray.length; j++) {
+                    let responseRating = firstResponseArray[j];
+
+                    //2) pushing all movies to only one array
+                    arrayOfFirstElements.push(responseRating);
+
+                    //the idea was to keep those whose rating was -+ 2 on mine
+                    // //keeping ratings compared to mine -+ 2
+                    // mapOfMovieRating.forEach(mv => {
+                    //     if (mv.movieId == responseRating.movieId) {
+                    //
+                    //         let diff = responseRating.rating - mv.rating;
+                    //         if (diff <= 2 && diff >= -2) {
+                    //             // if (arrayOfMergedResponseArray.length < 7500) {
+                    //                 arrayOfMergedResponseArray.push(responseRating);
+                    //             // }
+                    //         }
+                    //     }
+                    // })
+                }
+            }
+
+            //3) sorting first 5000 duplicates and then 5000 non duplicates
+            let arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds = sortDuplicateUserIdsAndKeepFirst(arrayOfFirstElements);
+
+            console.log(arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds);
+
+            //4) map of userId: count(rating)
+            let mapOfUserCountedRatings = arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds.reduce(function (obj, b) {
+                obj[b.userId] = ++obj[b.userId] || 1;
+
+                return obj;
+            }, {});
+
+            console.log(mapOfUserCountedRatings);
+
+            //5) Pushing to array with max 5000 elements only those who have been rated the same or -1 from the total size
+            let sizeToCheck = arrayOfUserMovieRatedFromInput.length - 1;
+            let arrayOfRatedTheSameOrMoreWithMe = [];
+            for (let userCountedRating in mapOfUserCountedRatings) {
+
+                //count value
+                if (mapOfUserCountedRatings[userCountedRating] >= sizeToCheck) {
+
+                    if (arrayOfRatedTheSameOrMoreWithMe.length < 5000) {
+                        arrayOfRatedTheSameOrMoreWithMe.push(userCountedRating);
+                    }
+                }
+            }
+
+            console.log(arrayOfRatedTheSameOrMoreWithMe);
+
+            //6) keeping only the duplicate userIds
+            //if I wanted to rate only one movie, I would have to comment this, because in the sorting, I keep both
+            //duplicate and non duplicate userIds
+            let arrayOfDuplicateBeenRatedSameOrMoreThanMine = arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds.filter(duplicateUserId => {
+                return arrayOfRatedTheSameOrMoreWithMe.includes(String(duplicateUserId.userId));
+            });
+
+            console.log(arrayOfDuplicateBeenRatedSameOrMoreThanMine);
+
+            let arrayOfUserWithMergedMovieAndRating = [];
+
+            let arrayOfUniqueUserIds = [];
+
+            //8) Creating custom object: userId: { movieRating: [{movieId: rating}] }
+            //Adding to new array
+            for (let i = 0; i < arrayOfDuplicateBeenRatedSameOrMoreThanMine.length; i++) {
+                let item = arrayOfDuplicateBeenRatedSameOrMoreThanMine[i];
+
+                let userId = item.userId;
+
+                //we don't want to keep duplicates userId with same rating movies
+                if (!arrayOfUniqueUserIds.includes(userId)) {
+                    arrayOfUniqueUserIds.push(userId);
+
+                    let newItem = {
+                        userId: userId,
+                        movieRating: []
+                    }
+
+                    for (let i = 0; i < arrayOfDuplicateBeenRatedSameOrMoreThanMine.length; i++) {
+                        let innerItem = arrayOfDuplicateBeenRatedSameOrMoreThanMine[i];
+
+                        if (innerItem.userId == item.userId) {
+                            //custom object userId: [{movieRating: rating}]
+                            newItem.movieRating = newItem.movieRating.concat([
+                                {"movieId": innerItem.movieId, "rating": parseFloat(innerItem.rating)}
+                            ]);
+                        }
+                    }
+
+                    // adding for every user, all the movie ratings
+                    arrayOfUserWithMergedMovieAndRating.push(newItem);
+                }
+            }
+
+            console.log(arrayOfUserWithMergedMovieAndRating);
+
+            let arrayOfDataset = [];
+
+            //9) the final compared object in this form: e.g -->
+            // geokall: { 60256: 4, 86317: 4} compared to every filtered user --> 39742: {60256: 4, 86317: 3.5}
+            let myReview = arrayOfUserMovieRatedFromInput.reduce(function (r, e) {
+                r[e.movieId] = parseFloat(e.rating);
+
+                //return for example 60256: 4 which is in format --> movieId: rating
+                return r;
+            }, {});
+
+            // console.log(myReview);
+
+            arrayOfUserWithMergedMovieAndRating.forEach(user => {
+                let result = user.movieRating.reduce(function (r, e) {
+                    r[e.movieId] = parseFloat(e.rating);
+                    r.userId = user.userId;
+
+                    return r;
+                }, {});
+
+                let filteredDatasetOfResponse = {};
+
+                filteredDatasetOfResponse[result.userId] = result;
+                filteredDatasetOfResponse.geokall = myReview;
+
+                //we don't want to compare the user with our review in the compared user's object, so we delete it
+                delete filteredDatasetOfResponse[result.userId].userId;
+
+                arrayOfDataset.push(filteredDatasetOfResponse);
+            });
+
+            console.log(arrayOfDataset);
+
+            let arrayOfUsersWithPearson = [];
+
+            //10) we gonna compare the whole dataset, with my review('geokall') and every compared user
+            // Adding to a new array only those whose pearson value is more than 0.7
+            arrayOfDataset.forEach(dataset => {
+                for (let idOfComparedUser in dataset) {
+                    if (idOfComparedUser !== 'geokall') {
+                        // console.log(dataset)
+                        let pearsonRating = findPearson(dataset, 'geokall', idOfComparedUser);
+
+                        // Recommended movies from maximum 5 users
+                        console.log(pearsonRating)
+                        if (pearsonRating >= 0.7 && arrayOfUsersWithPearson.length < 4) {
+                            arrayOfUsersWithPearson.push(idOfComparedUser);
+                        }
+                    }
+                }
+            });
+
+            //11) alert if none filtered user fetched with more than 0.7 pearson
+            if (arrayOfUsersWithPearson.length === 0) {
+                alert('Δεν μπορούν να προταθούν ταινίες, διότι δεν βρέθηκαν χρήστες με παρόμοιες προτιμήσεις');
+                return;
+            }
+
+            // console.log(arrayOfUsersWithPearson)
+
+            //12) for every pearson > 0.7 user, we gonna get their movies and keep 3 random movies whose rating is more than 3
+            getMoviesByUserId(arrayOfUsersWithPearson)
+                .then(randomMovies => {
+                    //13) getting the movie information and show a table
+                    getRecommendedMoviesBy(randomMovies)
+                        .then(finalMovie => {
+                            let recommendedTitle = document.createElement('h2');
+
+                            recommendedTitle.innerHTML = 'Ταινίες που προτείνονται';
+
+                            let tableElem = document.createElement('table');
+                            tableElem.setAttribute('id', 'recommendedTable')
+                            tableElem.setAttribute('style', 'float: left; margin-left: 50px');
+                            tableElem.appendChild(recommendedTitle);
+                            finalMovie.forEach(m => {
+                                m.forEach(movie => {
+                                    let trElem = document.createElement('tr');
+                                    let tdElem = document.createElement('td');
+
+                                    //title from fetched API
+                                    const tdText = document.createTextNode(movie.title + ' / ' + movie.genres);
+
+                                    tdElem.appendChild(tdText);
+                                    trElem.appendChild(tdElem);
+
+                                    tableElem.appendChild(trElem);
+                                });
+                            });
+
+                            let recommendedArea = document.getElementById('tableArea');
+                            recommendedArea.appendChild(tableElem);
+                        });
+                });
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    async function getRecommendedMoviesBy(randomMovies) {
+        let finalMovies = [];
+
+        for (let movie of randomMovies) {
+            let movieId = movie.movieId;
+
+            try {
+                const response = await fetch(`http://62.217.127.19:8010/movie/${movieId}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                const parsedResponse = await response.json();
+
+                finalMovies.push(parsedResponse);
+            } catch (err) {
+                console.log(err)
+            }
+        }
+
+        return finalMovies;
+    }
+
+    async function getMoviesByUserId(userIds) {
+        let arrayOfRandomMovies = [];
+
+        for (let user of userIds) {
+
+            try {
+                const response = await fetch(`http://62.217.127.19:8010/ratings/${user}`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                const parsedResponse = await response.json();
+
+                //recommended movies should be those with rating > 3 from users with pearson >= 0.7
+                let filter = parsedResponse.filter(x => x.rating > 3);
+
+                let randomMovie = filter[Math.floor(Math.random() * filter.length)];
+                let randomMovie2 = filter[Math.floor(Math.random() * filter.length)];
+                let randomMovie3 = filter[Math.floor(Math.random() * filter.length)];
+
+                //from every user get 3 random movies
+                arrayOfRandomMovies.push(randomMovie, randomMovie2, randomMovie3);
+            } catch (err) {
+                console.log(err)
+            }
+        }
+
+        return arrayOfRandomMovies;
+    }
+
+    async function searchMovies() {
+        try {
+            let searchText = document.getElementById('searchMovies').value;
+
+            const response = await fetch('http://62.217.127.19:8010/movie', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    "keyword": searchText
+                })
+            });
+
+            const result = await response.json();
+
+            /*
+            code: "ER_CANT_AGGREGATE_2COLLATIONS"
+            errno: 1267
+            index: 0
+            sql: "SELECT * FROM Movies WHERE title LIKE '%γγγ%'"
+            sqlMessage: "Illegal mix of collations (latin1_swedish_ci,IMPLICIT) and (utf8_general_ci,COERCIBLE) for operation 'like'"
+            sqlState: "HY000"
+             */
+            if (result.length === 0 || result.errno === 1267) {
+                alert('Δεν βρέθηκαν αποτελέσματα');
+                return;
+            }
+
+            let searchTitle = document.createElement('h2');
+
+            searchTitle.innerHTML = 'Ταινίες που βρέθηκαν';
+
+            const tableElem = document.createElement('table');
+            tableElem.setAttribute('style', 'float: left; width: 50%;');
+
+            tableElem.appendChild(searchTitle);
+
+            for (let i = 0; i < result.length; i++) {
+                const movie = result[i];
+                const trElem = document.createElement('tr');
+                const tdElem = document.createElement('td');
+
+                //need to prevent input number longer than 5
+                let numberElement = document.createElement('input');
+                numberElement.setAttribute('type', "range");
+                numberElement.setAttribute('min', '1');
+                numberElement.setAttribute('max', '5');
+                numberElement.setAttribute('step', '0.5');
+                numberElement.setAttribute('value', '0');
+                numberElement.setAttribute('id', movie.movieId); //movie ID from fetched API
+
+                let output = document.createElement('output');
+                output.setAttribute('name', 'ratingOutputName');
+                output.setAttribute('id', movie.movieId + '01'); //to fetch in by element id and change output value
+                output.value = '0';
+
+                //title from fetched API
+                const tdTitleAndGenres = document.createTextNode(movie.title + ' / ' + movie.genres);
+
+                tdElem.appendChild(tdTitleAndGenres);
+                tdElem.appendChild(numberElement);
+                tdElem.appendChild(output);
+
+                trElem.appendChild(tdElem);
+
+                tableElem.appendChild(trElem);
+            }
+
+            document.getElementById('tableArea').appendChild(tableElem);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    function onSearchButtonMovies() {
+        //deleting existing fetched records in every search
+        let tableArea = document.getElementById('tableArea');
+        let length = tableArea.childNodes.length;
+
+        for (let i = 0; i < length; i++) {
+            tableArea.removeChild(tableArea.childNodes[0]);
+        }
+
+        arrayOfUserMovieRatedFromInput = [];
+        arrayOfUserRated = [];
+
+        let calculateButton = document.getElementById('calculate');
+        calculateButton.disabled = true;
+
+        searchMovies().then(movie => {
+
+            document.querySelectorAll('input[type="range"]').forEach(item => {
+
+                item.addEventListener('input', event => {
+                    let output = document.getElementById(item.id + '01'); //fetching the output with custom id
+                    output.innerText = event.target.value;
+
+                    let alreadyExistsId = arrayOfUserMovieRatedFromInput.find((obj => obj.movieId === item.id));
+
+                    if (arrayOfUserMovieRatedFromInput.length > 4) {
+
+                        //changing rating from already rated movieId
+                        if (alreadyExistsId !== undefined) {
+                            alreadyExistsId.rating = event.target.value;
+                            item.value = event.target.value;
+                            output.value = event.target.value;
+                        } else {
+                            //changing rating to the 6th movie, must not be allowed
+                            item.value = '0';
+                            output.value = '0';
+                            alert('Δεν μπορείτε να βαθμολογήσετε περισσότερες απο 5 ταινίες');
+                        }
+
+                    } else {
+
+                        //this is used in getRatings as a SET because we want to store no duplicate ids
+                        arrayOfUserRated.push(parseInt(item.id));
+
+                        //we want to keep for the 1st 4 movieIds the latest rating on input
+                        if (alreadyExistsId !== undefined) {
+                            alreadyExistsId.rating = event.target.value;
+
+                        } else {
+                            //this is the step that user can rate up to 4 NEW movies.
+                            arrayOfUserMovieRatedFromInput.push({"movieId": item.id, "rating": event.target.value});
+                        }
+                    }
+
+                    //in order to retrieve recommended movies, we want at least 1 rated movie
+                    let calculateButton = document.getElementById('calculate');
+
+                    if (arrayOfUserMovieRatedFromInput.length >= 2) {
+                        calculateButton.disabled = false;
+                    } else {
+                        calculateButton.disabled = true;
+                    }
+                });
+            });
+        });
+    }
+
+    function onCalculateButton() {
+        //removing the fetched recommended table
+        let recommendedTables = document.getElementById("recommendedTable");
+
+        if (recommendedTables != null) {
+            recommendedTables.remove()
+        }
+
+        getRatings();
+
+        let calculateButton = document.getElementById('calculate');
+        calculateButton.disabled = true;
+    }
+
+    function isTextEnabled(value) {
+        let searchButtonMovies = document.getElementById('searchButtonMovies');
+
+        if (value.length >= 3) {
+            searchButtonMovies.disabled = false;
+        } else {
+            searchButtonMovies.disabled = true;
+        }
+    }
+
+    function sortDuplicateUserIdsAndKeepFirst(objects) {
+
+        // ordering from smallest to largest
+        let ascending = function (prev, next) {
+            return prev.userId - next.userId;
+        };
+
+        // sorts an arr with an ascending ordering
+        let ascendingSort = function (arr) {
+            return arr.sort(ascending);
+        };
+
+        // checks if item is a duplicate
+        let isDuplicate = function (item) {
+            return objects.filter(function (obj) {
+                return obj.userId == item.userId
+            }).length == 1 ? false : true;
+        }
+
+        // checks if item is not a duplicate
+        let notDuplicate = function (item) {
+            return !isDuplicate(item);
+        }
+
+        // partition duplicates n' non duplicates
+        //keeping first 5000
+        let duplicates = objects.filter(isDuplicate).slice(0, 5000);
+        let nonDuplicates = objects.filter(notDuplicate).slice(0, 5000);
+
+        // sort duplicates/non duplicates and flatten/concat into one array
+        return [].concat.apply([], [duplicates, nonDuplicates].map(ascendingSort));
+    }
+
+    function findPearson(dataset, p1, p2) {
+        let existp1p2 = {};
+        console.log(dataset[p1], dataset[p2])
+
+        for (let item in dataset[p1]) {
+            if (item in dataset[p2]) {
+                existp1p2[item] = 1
+            }
+        }
+
+        let num_existence = lengthOfObject(existp1p2);
+        if (num_existence === 0) return 0;
+
+        //store the sum and the square sum of both p1 and p2
+        //store the product of both
+        let p1_sum = 0;
+        let p2_sum = 0;
+        let p1_sq_sum = 0;
+        let p2_sq_sum = 0;
+        let prod_p1p2 = 0;
+
+        //calculate the sum and square sum of each data point
+        //and also the product of both point
+        for (let item in existp1p2) {
+            p1_sum += dataset[p1][item];
+            p2_sum += dataset[p2][item];
+            p1_sq_sum += Math.pow(dataset[p1][item], 2);
+            p2_sq_sum += Math.pow(dataset[p2][item], 2);
+            prod_p1p2 += dataset[p1][item] * dataset[p2][item];
+        }
+
+        let numerator = prod_p1p2 - (p1_sum * p2_sum / num_existence);
+
+        let st1 = p1_sq_sum - Math.pow(p1_sum, 2) / num_existence;
+        let st2 = p2_sq_sum - Math.pow(p2_sum, 2) / num_existence;
+        let denominator = Math.sqrt(st1 * st2);
+
+        if (denominator === 0) return 0;
+
+        let val = numerator / denominator;
+
+        return val;
+    }
+
+    function lengthOfObject(obj) {
+        let length = 0;
+
+        for (let i in obj) {
+            length++;
+        }
+
+        return length;
+    }
+
+    function sliceElements(parsedResponse) {
+        //1) Keeping first 5000 elements for every array movie
+        //if slice is more than 800, sort on userId is not working
+        //fetching for every array movie, the first 800
+        let first5kElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(0, 800);
+        });
+
+        let second800ElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(800, 1600);
+        });
+
+        let third800ElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(1600, 2400);
+        });
+
+        let forth800ElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(2400, 3200);
+        });
+
+        let fifth800ElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(3200, 4000);
+        });
+
+        let sixth800ElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(4000, 4800);
+        });
+
+        let seventh200ElementsOfEachMovie = parsedResponse.map(movies => {
+            return movies.slice(4800, 5000);
+        });
+
+        second800ElementsOfEachMovie.forEach(movie => {
+            first5kElementsOfEachMovie.push(movie);
+        });
+
+        third800ElementsOfEachMovie.forEach(movie => {
+            first5kElementsOfEachMovie.push(movie);
+        });
+
+        forth800ElementsOfEachMovie.forEach(movie => {
+            first5kElementsOfEachMovie.push(movie);
+        });
+
+        fifth800ElementsOfEachMovie.forEach(movie => {
+            first5kElementsOfEachMovie.push(movie);
+        });
+
+        sixth800ElementsOfEachMovie.forEach(movie => {
+            first5kElementsOfEachMovie.push(movie);
+        });
+
+        seventh200ElementsOfEachMovie.forEach(movie => {
+            first5kElementsOfEachMovie.push(movie);
+        });
+
+        return first5kElementsOfEachMovie;
+    }
+
+</script>
+
+</html>
