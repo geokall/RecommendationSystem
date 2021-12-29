@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 <!--
-*User is able to search only typing alphanumerical. Only english letters and non-special characters.
-*User must type at least 3 chars.
-*User must rate at least 2 movies and max 5.
-*User is able to re-rate the same movies but not more than 5. Alert message in this case.
-*Calculation button once is clicked, it gets disabled. Need to re-rate to be enabled again.
-*If none filtered user found with more than 0.7 pearson, alert message is shown.
+## How it works
+User is able to search a movie only by typing alphanumerical. Only english letters and non-special characters are allowed.
+User must type at least 3 characters.
+User must rate at least 2 movies and maximum 5 movies.
+User is able to re-rate the same movies but not more than 5. In case user tries to rate a 6th movie, an alert message will be appeared in the screen.
+Calculation button once is clicked, it gets disabled. Need to re-rate to be enabled again.
+In order for the algorithm to recommend movies, there must be users that have been scored with >= 0.7 pearson.
+If none filtered user found with more than 0.7 pearson, alert message will be appeared in the screen.
  -->
 
-<!-- All the steps are described in every function, from 1) up to 13) -->
+<!-- All the steps are described in every corresponding function, from 1) up to 13) -->
 
 <head>
     <meta charset="utf-8">
