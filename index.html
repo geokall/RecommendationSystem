@@ -20,9 +20,11 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
 <body>
 <h2>Σύστημα παροχής προτάσεων ταινιών.</h2>
+<h3>Για να μπορέσει ο αλγόριθμος να προτείνει ταινίες, πρέπει ο χρήστης να βαθμολογήσει από 2 εώς και 5 ταινίες έτσι ώστε να βρεθούν οι αντίστοιχοι χρήστες με παρόμοιες προτιμήσεις.</h3>
+<h3>Όσοι βρεθούν, συγκρίνονται με τον συνδεδεμένο χρήστη, και προτείνονται ταινίες από τους χρήστες με την υψηλότερη βαθμολογία σε σχέση με τον αλγόριθμο Pearson correlation coefficient.</h3>
+<h3>Σε περίπτωση που δεν βρεθούν χρήστες με υψηλή βαθμολογία, δεν προτείνεται καμία ταινία.</h3>
+<h3>Αριστερά εμφανίζονται τα αποτελέσματα της αναζήτησης των ταινιών και δεξιά τα αποτελέσματα των προτάσεων.</h3>
 <h3>Αναζητήστε ταινία με τουλάχιστον 3 χαρακτήρες.</h3>
-<h3>Για να προταθούν ταινίες, πρέπει να βαθμολογήσετε απο 2 έως και 5 ταινίες.</h3>
-<h3>Αριστερά θα βρείτε τα αποτελέσματα της αναζήτησης των ταινιών και δεξιά τα αποτελέσματα των προτάσεων.</h3>
 
 <!--Allow only alphanumeric, space and hyphen(-) -->
 <input type="text" placeholder="Ταινία ή στοιχείο ταινίας" oninput="isTextEnabled(value);"
@@ -223,7 +225,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             //11) alert if none filtered user fetched with more than 0.7 pearson
             if (arrayOfUsersWithPearson.length === 0) {
-                alert('Δεν μπορούν να προταθούν ταινίες, διότι δεν βρέθηκαν χρήστες με παρόμοιες προτιμήσεις');
+                alert('Δεν μπορούν να προταθούν ταινίες, διότι δεν βρέθηκαν χρήστες με παρόμοιες προτιμήσεις.');
                 return;
             }
 
@@ -330,7 +332,12 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 })
             });
 
-            const result = await response.json();
+            let result = await response.json();
+
+            if (result.length > 1000) {
+                result = result.slice(0, 200)
+                alert('Λόγο μεγάλου όγκου αποτελεσμάτων ταινιών, θα εμφανιστούν τα πρώτα 200 αποτελέσματα. Αναζητήστε παρακαλώ με πιο συγκεκριμένα στοιχεία. Πατήστε οκ για την εμφάνιση των αποτελεσμάτων.')
+            }
 
             /*
             code: "ER_CANT_AGGREGATE_2COLLATIONS"
@@ -341,7 +348,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
             sqlState: "HY000"
              */
             if (result.length === 0 || result.errno === 1267) {
-                alert('Δεν βρέθηκαν αποτελέσματα');
+                alert('Δεν βρέθηκαν αποτελέσματα.');
                 return;
             }
 
@@ -427,7 +434,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                             //changing rating to the 6th movie, must not be allowed
                             item.value = '0';
                             output.value = '0';
-                            alert('Δεν μπορείτε να βαθμολογήσετε περισσότερες απο 5 ταινίες');
+                            alert('Δεν μπορείτε να βαθμολογήσετε περισσότερες απο 5 ταινίες.');
                         }
 
                     } else {

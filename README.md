@@ -88,6 +88,3 @@ Below you can find all the credits I'd like to give. <br />
 [https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array](https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array) <br/>
 [https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name](https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name) <br/>
 [https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table](https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table) <br/>
-```bash
-
-```
