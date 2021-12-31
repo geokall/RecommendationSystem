@@ -79,15 +79,15 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
 Below you can find all the credits I'd like to give. <br />
 [https://www.digitalvidya.com/blog/collaborative-filtering/](https://www.digitalvidya.com/blog/collaborative-filtering/) <br/>
-[https://becominghuman.ai/introduction-to-recommendation-system-in-javascript-74209c7ff2f7](https://becominghuman.ai/introduction-to-recommendation-system-in-javascript-74209c7ff2f7)
-[https://stackoverflow.com/questions/1069666/sorting-object-property-by-values](https://stackoverflow.com/questions/1069666/sorting-object-property-by-values)
-[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
-[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce)
-[https://coderedirect.com/questions/547235/await-with-array-foreach-containing-async-await](https://coderedirect.com/questions/547235/await-with-array-foreach-containing-async-await)
-[https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await)
-[https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array](https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array)
-[https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name](https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name)
-[https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table](https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table)
+[https://becominghuman.ai/introduction-to-recommendation-system-in-javascript-74209c7ff2f7](https://becominghuman.ai/introduction-to-recommendation-system-in-javascript-74209c7ff2f7) <br/>
+[https://stackoverflow.com/questions/1069666/sorting-object-property-by-values](https://stackoverflow.com/questions/1069666/sorting-object-property-by-values) <br/>
+[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) <br/>
+[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce) <br/>
+[https://coderedirect.com/questions/547235/await-with-array-foreach-containing-async-await](https://coderedirect.com/questions/547235/await-with-array-foreach-containing-async-await) <br/>
+[https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await) <br/>
+[https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array](https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array) <br/>
+[https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name](https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name) <br/>
+[https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table](https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table) <br/>
 ```bash
 
 ```
