@@ -58,19 +58,36 @@ URL: http://62.217.127.19:8010/ratings/{id}
 
 Έξοδος: Ένα json array με τα ratings και τα υπόλοιπα στοιχεία των ταινιών τις οποίες ο χρήστης uID έχει αξιολογήσει.
 
-Παραδοτέα και προθεσμίες
-Ως προθεσμία παράδοσης ορίζεται η 07-01-2022 23:55:00
+Παραδοτέα και προθεσμίες<br />
+Ως προθεσμία παράδοσης ορίζεται η 07-01-2022 23:55:00<br />
 Θα πρέπει να παραδώσετε όλα τα αρχεία html, css και js που έχετε υλοποιήσει σε ένα αρχείο .zip με όνομα τον Α.Μ. σας.
-Σημειώσεις
-Δε χρειάζεται να υλοποιήσετε μηχανισμούς authorization, authentication, accounting. Θεωρείστε ότι τη σελίδα τη χρησιμοποιεί ένας χρήστης για όσο διάστημα την έχει ανοιχτή.
-Θα πρέπει να χρησιμοποιήσετε τα APIs και τις τεχνικές που είδαμε στο μάθημα (vanilla JS). Όχι frameworks και τίποτα μετά από την ES2015
+Σημειώσεις<br />
+Δε χρειάζεται να υλοποιήσετε μηχανισμούς authorization, authentication, accounting. Θεωρείστε ότι τη σελίδα τη χρησιμοποιεί ένας χρήστης για όσο διάστημα την έχει ανοιχτή.<br />
+Θα πρέπει να χρησιμοποιήσετε τα APIs και τις τεχνικές που είδαμε στο μάθημα (vanilla JS). Όχι frameworks και τίποτα μετά από την ES2015<br />
 Μπορείτε να βρείτε τους κανόνες για την παράδοση της εργασίας εδώ: http://www.dit.hua.gr/~tserpes/instructions.html
 
 ## How it works
-User is able to search a movie only by typing alphanumerical. Only english letters and non-special characters are allowed.
-User must type at least 3 characters.
-User must rate at least 2 movies and maximum 5 movies.
-User is able to re-rate the same movies but not more than 5. In case user tries to rate a 6th movie, an alert message will be appeared in the screen.
-Calculation button once is clicked, it gets disabled. Need to re-rate to be enabled again.
-In order for the algorithm to recommend movies, there must be users that have been scored with >= 0.7 pearson.
-If none filtered user found with more than 0.7 pearson, alert message will be appeared in the screen.
+User is able to search a movie only by typing alphanumerical. Only english letters and non-special characters are allowed.<br />
+User must type at least 3 characters.<br />
+User must rate at least 2 movies and maximum 5 movies.<br />
+User is able to re-rate the same movies but not more than 5. In case user tries to rate a 6th movie, an alert message will be appeared in the screen.<br />
+Calculation button once is clicked, it gets disabled. Need to re-rate to be enabled again.<br />
+In order for the algorithm to recommend movies, there must be users that have been scored with >= 0.7 pearson.<br />
+If none filtered user found with more than 0.7 pearson, alert message will be appeared in the screen.<br />
+
+## Credits
+
+Below you can find all the credits I'd like to give. <br />
+[https://www.digitalvidya.com/blog/collaborative-filtering/](https://www.digitalvidya.com/blog/collaborative-filtering/) <br/>
+[https://becominghuman.ai/introduction-to-recommendation-system-in-javascript-74209c7ff2f7](https://becominghuman.ai/introduction-to-recommendation-system-in-javascript-74209c7ff2f7)
+[https://stackoverflow.com/questions/1069666/sorting-object-property-by-values](https://stackoverflow.com/questions/1069666/sorting-object-property-by-values)
+[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
+[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce)
+[https://coderedirect.com/questions/547235/await-with-array-foreach-containing-async-await](https://coderedirect.com/questions/547235/await-with-array-foreach-containing-async-await)
+[https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await)
+[https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array](https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array)
+[https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name](https://stackoverflow.com/questions/15148659/how-can-i-use-queryselector-on-to-pick-an-input-element-by-name)
+[https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table](https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table)
+```bash
+
+```
