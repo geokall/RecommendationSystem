@@ -53,20 +53,20 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             let arrayOfFirstElements = [];
 
-            let mapOfMovieRating = arrayOfUserMovieRatedFromInput.map(user => (
-                {
-                    movieId: user.movieId,
-                    rating: user.rating
-                }
-            ));
+            //should have been used with rating below..decided not to use it
+            // let mapOfMovieRating = arrayOfUserMovieRatedFromInput.map(user => (
+            //     {
+            //         movieId: user.movieId,
+            //         rating: user.rating
+            //     }
+            // ));
 
             let first5kElementsOfEachMovie = sliceElements(parsedResponse);
 
-            console.log(first5kElementsOfEachMovie);
+            // console.log(first5kElementsOfEachMovie);
 
             for (let i = 0; i < first5kElementsOfEachMovie.length; i++) {
                 let firstResponseArray = first5kElementsOfEachMovie[i];
-                console.log(firstResponseArray)
 
                 for (let j = 0; j < firstResponseArray.length; j++) {
                     let responseRating = firstResponseArray[j];
@@ -90,10 +90,10 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 }
             }
 
-            //3) sorting first 5000 duplicates and then 5000 non duplicates
+            //3) sorting first 4000 duplicates and then 1000 non duplicates
             let arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds = sortDuplicateUserIdsAndKeepFirst(arrayOfFirstElements);
 
-            console.log(arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds);
+            // console.log(arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds);
 
             //4) map of userId: count(rating)
             let mapOfUserCountedRatings = arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds.reduce(function (obj, b) {
@@ -102,10 +102,11 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 return obj;
             }, {});
 
-            console.log(mapOfUserCountedRatings);
+            // console.log(mapOfUserCountedRatings);
 
             //5) Pushing to array with max 5000 elements only those who have been rated the same or -1 from the total size
             let sizeToCheck = arrayOfUserMovieRatedFromInput.length - 1;
+
             let arrayOfRatedTheSameOrMoreWithMe = [];
             for (let userCountedRating in mapOfUserCountedRatings) {
 
@@ -127,7 +128,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 return arrayOfRatedTheSameOrMoreWithMe.includes(String(duplicateUserId.userId));
             });
 
-            console.log(arrayOfDuplicateBeenRatedSameOrMoreThanMine);
+            // console.log(arrayOfDuplicateBeenRatedSameOrMoreThanMine);
 
             let arrayOfUserWithMergedMovieAndRating = [];
 
@@ -165,7 +166,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 }
             }
 
-            console.log(arrayOfUserWithMergedMovieAndRating);
+            // console.log(arrayOfUserWithMergedMovieAndRating);
 
             let arrayOfDataset = [];
 
@@ -199,7 +200,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 arrayOfDataset.push(filteredDatasetOfResponse);
             });
 
-            console.log(arrayOfDataset);
+            // console.log(arrayOfDataset);
 
             let arrayOfUsersWithPearson = [];
 
@@ -212,7 +213,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                         let pearsonRating = findPearson(dataset, 'geokall', idOfComparedUser);
 
                         // Recommended movies from maximum 5 users
-                        console.log(pearsonRating)
+                        // console.log(pearsonRating)
                         if (pearsonRating >= 0.7 && arrayOfUsersWithPearson.length < 4) {
                             arrayOfUsersWithPearson.push(idOfComparedUser);
                         }
@@ -434,17 +435,17 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                         //this is used in getRatings as a SET because we want to store no duplicate ids
                         arrayOfUserRated.push(parseInt(item.id));
 
-                        //we want to keep for the 1st 4 movieIds the latest rating on input
+                        //we want to keep for the 1st 5 movieIds the latest rating on input
                         if (alreadyExistsId !== undefined) {
                             alreadyExistsId.rating = event.target.value;
 
                         } else {
-                            //this is the step that user can rate up to 4 NEW movies.
+                            //this is the step that user can rate up to 5 NEW movies.
                             arrayOfUserMovieRatedFromInput.push({"movieId": item.id, "rating": event.target.value});
                         }
                     }
 
-                    //in order to retrieve recommended movies, we want at least 1 rated movie
+                    //in order to retrieve recommended movies, we want at least 2 rated movies
                     let calculateButton = document.getElementById('calculate');
 
                     if (arrayOfUserMovieRatedFromInput.length >= 2) {
@@ -483,32 +484,32 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
     function sortDuplicateUserIdsAndKeepFirst(objects) {
 
-        // ordering from smallest to largest
+        // smallest to largest userId
         let ascending = function (prev, next) {
             return prev.userId - next.userId;
         };
 
-        // sorts an arr with an ascending ordering
+        // ascending
         let ascendingSort = function (arr) {
             return arr.sort(ascending);
         };
 
-        // checks if item is a duplicate
+        // checks if userId is a duplicate
         let isDuplicate = function (item) {
             return objects.filter(function (obj) {
                 return obj.userId == item.userId
             }).length == 1 ? false : true;
         }
 
-        // checks if item is not a duplicate
+        // checks if userId is not a duplicate
         let notDuplicate = function (item) {
             return !isDuplicate(item);
         }
 
         // partition duplicates n' non duplicates
-        //keeping first 5000
-        let duplicates = objects.filter(isDuplicate).slice(0, 5000);
-        let nonDuplicates = objects.filter(notDuplicate).slice(0, 5000);
+        //keeping first duplicate 4000 and then 1000 non duplicate
+        let duplicates = objects.filter(isDuplicate).slice(0, 4000);
+        let nonDuplicates = objects.filter(notDuplicate).slice(0, 1000);
 
         // sort duplicates/non duplicates and flatten/concat into one array
         return [].concat.apply([], [duplicates, nonDuplicates].map(ascendingSort));
@@ -516,7 +517,6 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
     function findPearson(dataset, p1, p2) {
         let existp1p2 = {};
-        console.log(dataset[p1], dataset[p2])
 
         for (let item in dataset[p1]) {
             if (item in dataset[p2]) {
