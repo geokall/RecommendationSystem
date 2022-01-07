@@ -11,7 +11,7 @@ In order for the algorithm to recommend movies, there must be users that have be
 If none filtered user found with more than 0.7 pearson, alert message will be appeared in the screen.
  -->
 
-<!-- All the steps are described in every corresponding function, from 1) up to 13) -->
+<!-- All the steps are described in every corresponding function, from 1) up to 12) -->
 
 <head>
     <meta charset="utf-8">
@@ -20,8 +20,10 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
 <body>
 <h2>Σύστημα παροχής προτάσεων ταινιών.</h2>
-<h3>Για να μπορέσει ο αλγόριθμος να προτείνει ταινίες, πρέπει ο χρήστης να βαθμολογήσει από 2 εώς και 5 ταινίες έτσι ώστε να βρεθούν οι αντίστοιχοι χρήστες με παρόμοιες προτιμήσεις.</h3>
-<h3>Όσοι βρεθούν, συγκρίνονται με τον συνδεδεμένο χρήστη, και προτείνονται ταινίες από τους χρήστες με την υψηλότερη βαθμολογία σε σχέση με τον αλγόριθμο Pearson correlation coefficient.</h3>
+<h3>Για να μπορέσει ο αλγόριθμος να προτείνει ταινίες, πρέπει ο χρήστης να βαθμολογήσει από 2 εώς και 5 ταινίες έτσι
+    ώστε να βρεθούν οι αντίστοιχοι χρήστες με παρόμοιες προτιμήσεις.</h3>
+<h3>Όσοι βρεθούν, συγκρίνονται με τον συνδεδεμένο χρήστη, και προτείνονται ταινίες από τους χρήστες με την υψηλότερη
+    βαθμολογία σε σχέση με τον αλγόριθμο Pearson correlation coefficient.</h3>
 <h3>Σε περίπτωση που δεν βρεθούν χρήστες με υψηλή βαθμολογία, δεν προτείνεται καμία ταινία.</h3>
 <h3>Αριστερά εμφανίζονται τα αποτελέσματα της αναζήτησης των ταινιών και δεξιά τα αποτελέσματα των προτάσεων.</h3>
 <h3>Αναζητήστε ταινία με τουλάχιστον 3 χαρακτήρες.</h3>
@@ -53,52 +55,32 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             const parsedResponse = await response.json();
 
-            let arrayOfFirstElements = [];
+            let arrayOfParsedResponse = [];
 
-            //should have been used with rating below..decided not to use it
-            // let mapOfMovieRating = arrayOfUserMovieRatedFromInput.map(user => (
-            //     {
-            //         movieId: user.movieId,
-            //         rating: user.rating
-            //     }
-            // ));
+            // console.log(parsedResponse);
 
-            let first5kElementsOfEachMovie = sliceElements(parsedResponse);
-
-            // console.log(first5kElementsOfEachMovie);
-
-            for (let i = 0; i < first5kElementsOfEachMovie.length; i++) {
-                let firstResponseArray = first5kElementsOfEachMovie[i];
+            for (let i = 0; i < parsedResponse.length; i++) {
+                let firstResponseArray = parsedResponse[i];
 
                 for (let j = 0; j < firstResponseArray.length; j++) {
                     let responseRating = firstResponseArray[j];
 
                     //2) pushing all movies to only one array
-                    arrayOfFirstElements.push(responseRating);
-
-                    //the idea was to keep those whose rating was -+ 2 on mine
-                    // //keeping ratings compared to mine -+ 2
-                    // mapOfMovieRating.forEach(mv => {
-                    //     if (mv.movieId == responseRating.movieId) {
-                    //
-                    //         let diff = responseRating.rating - mv.rating;
-                    //         if (diff <= 2 && diff >= -2) {
-                    //             // if (arrayOfMergedResponseArray.length < 7500) {
-                    //                 arrayOfMergedResponseArray.push(responseRating);
-                    //             // }
-                    //         }
-                    //     }
-                    // })
+                    arrayOfParsedResponse.push(responseRating);
                 }
             }
 
-            //3) sorting first 4000 duplicates and then 1000 non duplicates
-            let arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds = sortDuplicateUserIdsAndKeepFirst(arrayOfFirstElements);
+            // smallest to largest userId
+            let ascending = function (prev, next) {
+                return prev.userId - next.userId;
+            };
+
+            let arrayOfSortedAscending = arrayOfParsedResponse.sort(ascending);
 
             // console.log(arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds);
 
             //4) map of userId: count(rating)
-            let mapOfUserCountedRatings = arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds.reduce(function (obj, b) {
+            let mapOfUserCountedRatings = arrayOfSortedAscending.reduce(function (obj, b) {
                 obj[b.userId] = ++obj[b.userId] || 1;
 
                 return obj;
@@ -106,7 +88,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             // console.log(mapOfUserCountedRatings);
 
-            //5) Pushing to array with max 5000 elements only those who have been rated the same or -1 from the total size
+            //5) Pushing to array those who have been rated the same or -1 from the total size
             let sizeToCheck = arrayOfUserMovieRatedFromInput.length - 1;
 
             let arrayOfRatedTheSameOrMoreWithMe = [];
@@ -115,18 +97,18 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 //count value
                 if (mapOfUserCountedRatings[userCountedRating] >= sizeToCheck) {
 
+                    //keeping 5000 unique userIds, because there are responses with over 80k
+                    //changing this parameter, can change some results, but in most cases 5k is more than enough
                     if (arrayOfRatedTheSameOrMoreWithMe.length < 5000) {
                         arrayOfRatedTheSameOrMoreWithMe.push(userCountedRating);
                     }
                 }
             }
 
-            console.log(arrayOfRatedTheSameOrMoreWithMe);
+            // console.log(arrayOfRatedTheSameOrMoreWithMe);
 
-            //6) keeping only the duplicate userIds
-            //if I wanted to rate only one movie, I would have to comment this, because in the sorting, I keep both
-            //duplicate and non duplicate userIds
-            let arrayOfDuplicateBeenRatedSameOrMoreThanMine = arrayOfFirstSortedDuplicateAndThenNonDuplicateUserIds.filter(duplicateUserId => {
+            //6) keeping only the duplicate userIds because user must rate at least 2 movies
+            let arrayOfDuplicateBeenRatedSameOrMoreThanMine = arrayOfSortedAscending.filter(duplicateUserId => {
                 return arrayOfRatedTheSameOrMoreWithMe.includes(String(duplicateUserId.userId));
             });
 
@@ -136,7 +118,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             let arrayOfUniqueUserIds = [];
 
-            //8) Creating custom object: userId: { movieRating: [{movieId: rating}] }
+            //7) Creating custom object: userId: { movieRating: [{movieId: rating}] }
             //Adding to new array
             for (let i = 0; i < arrayOfDuplicateBeenRatedSameOrMoreThanMine.length; i++) {
                 let item = arrayOfDuplicateBeenRatedSameOrMoreThanMine[i];
@@ -172,17 +154,17 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             let arrayOfDataset = [];
 
-            //9) the final compared object in this form: e.g -->
-            // geokall: { 60256: 4, 86317: 4} compared to every filtered user --> 39742: {60256: 4, 86317: 3.5}
+            //return for example 60256: 4 which is in format --> movieId: rating
             let myReview = arrayOfUserMovieRatedFromInput.reduce(function (r, e) {
                 r[e.movieId] = parseFloat(e.rating);
 
-                //return for example 60256: 4 which is in format --> movieId: rating
                 return r;
             }, {});
 
             // console.log(myReview);
 
+            //8) the final compared object in this form: e.g -->
+            //geokall: { 60256: 4, 86317: 4} compared to every filtered user --> 39742: {60256: 4, 86317: 3.5}
             arrayOfUserWithMergedMovieAndRating.forEach(user => {
                 let result = user.movieRating.reduce(function (r, e) {
                     r[e.movieId] = parseFloat(e.rating);
@@ -206,7 +188,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             let arrayOfUsersWithPearson = [];
 
-            //10) we gonna compare the whole dataset, with my review('geokall') and every compared user
+            //9) we gonna compare the whole dataset, with my review('geokall') with every compared user
             // Adding to a new array only those whose pearson value is more than 0.7
             arrayOfDataset.forEach(dataset => {
                 for (let idOfComparedUser in dataset) {
@@ -223,7 +205,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
                 }
             });
 
-            //11) alert if none filtered user fetched with more than 0.7 pearson
+            //10) alert if none filtered user fetched with more than 0.7 pearson
             if (arrayOfUsersWithPearson.length === 0) {
                 alert('Δεν μπορούν να προταθούν ταινίες, διότι δεν βρέθηκαν χρήστες με παρόμοιες προτιμήσεις.');
                 return;
@@ -231,10 +213,10 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             // console.log(arrayOfUsersWithPearson)
 
-            //12) for every pearson > 0.7 user, we gonna get their movies and keep 3 random movies whose rating is more than 3
+            //11) for every pearson score > 0.7 user, we gonna get their movies and keep 3 random movies whose rating is more than 3
             getMoviesByUserId(arrayOfUsersWithPearson)
                 .then(randomMovies => {
-                    //13) getting the movie information and show a table
+                    //12) getting the movie information and show a table
                     getRecommendedMoviesBy(randomMovies)
                         .then(finalMovie => {
                             let recommendedTitle = document.createElement('h2');
@@ -336,7 +318,7 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
 
             if (result.length > 1000) {
                 result = result.slice(0, 200)
-                alert('Λόγο μεγάλου όγκου αποτελεσμάτων ταινιών, θα εμφανιστούν τα πρώτα 200 αποτελέσματα. Αναζητήστε παρακαλώ με πιο συγκεκριμένα στοιχεία. Πατήστε οκ για την εμφάνιση των αποτελεσμάτων.')
+                alert('Λόγο μεγάλου όγκου αποτελεσμάτων ταινιών, θα εμφανιστούν τα πρώτα 200 αποτελέσματα. Αναζητήστε με πιο συγκεκριμένα στοιχεία. Πατήστε οκ για την εμφάνιση των αποτελεσμάτων.')
             }
 
             /*
@@ -489,39 +471,6 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
         }
     }
 
-    function sortDuplicateUserIdsAndKeepFirst(objects) {
-
-        // smallest to largest userId
-        let ascending = function (prev, next) {
-            return prev.userId - next.userId;
-        };
-
-        // ascending
-        let ascendingSort = function (arr) {
-            return arr.sort(ascending);
-        };
-
-        // checks if userId is a duplicate
-        let isDuplicate = function (item) {
-            return objects.filter(function (obj) {
-                return obj.userId == item.userId
-            }).length == 1 ? false : true;
-        }
-
-        // checks if userId is not a duplicate
-        let notDuplicate = function (item) {
-            return !isDuplicate(item);
-        }
-
-        // partition duplicates n' non duplicates
-        //keeping first duplicate 4000 and then 1000 non duplicate
-        let duplicates = objects.filter(isDuplicate).slice(0, 4000);
-        let nonDuplicates = objects.filter(notDuplicate).slice(0, 1000);
-
-        // sort duplicates/non duplicates and flatten/concat into one array
-        return [].concat.apply([], [duplicates, nonDuplicates].map(ascendingSort));
-    }
-
     function findPearson(dataset, p1, p2) {
         let existp1p2 = {};
 
@@ -575,63 +524,38 @@ If none filtered user found with more than 0.7 pearson, alert message will be ap
         return length;
     }
 
-    function sliceElements(parsedResponse) {
-        //1) Keeping first 5000 elements for every array movie
-        //if slice is more than 800, sort on userId is not working
-        //fetching for every array movie, the first 800
-        let first5kElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(0, 800);
-        });
+    //not used
+    function sortDuplicateUserIdsAndKeepFirst(objects) {
 
-        let second800ElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(800, 1600);
-        });
+        // smallest to largest userId
+        let ascending = function (prev, next) {
+            return prev.userId - next.userId;
+        };
 
-        let third800ElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(1600, 2400);
-        });
+        // ascending
+        let ascendingSort = function (arr) {
+            return arr.sort(ascending);
+        };
 
-        let forth800ElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(2400, 3200);
-        });
+        // checks if userId is a duplicate
+        let isDuplicate = function (item) {
+            return objects.filter(function (obj) {
+                return obj.userId == item.userId
+            }).length == 1 ? false : true;
+        }
 
-        let fifth800ElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(3200, 4000);
-        });
+        // checks if userId is not a duplicate
+        let notDuplicate = function (item) {
+            return !isDuplicate(item);
+        }
 
-        let sixth800ElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(4000, 4800);
-        });
+        // partition duplicates n' non duplicates
+        //keeping first duplicate 4000 and then 1000 non duplicate
+        let duplicates = objects.filter(isDuplicate).slice(0, 4000);
+        let nonDuplicates = objects.filter(notDuplicate).slice(0, 1000);
 
-        let seventh200ElementsOfEachMovie = parsedResponse.map(movies => {
-            return movies.slice(4800, 5000);
-        });
-
-        second800ElementsOfEachMovie.forEach(movie => {
-            first5kElementsOfEachMovie.push(movie);
-        });
-
-        third800ElementsOfEachMovie.forEach(movie => {
-            first5kElementsOfEachMovie.push(movie);
-        });
-
-        forth800ElementsOfEachMovie.forEach(movie => {
-            first5kElementsOfEachMovie.push(movie);
-        });
-
-        fifth800ElementsOfEachMovie.forEach(movie => {
-            first5kElementsOfEachMovie.push(movie);
-        });
-
-        sixth800ElementsOfEachMovie.forEach(movie => {
-            first5kElementsOfEachMovie.push(movie);
-        });
-
-        seventh200ElementsOfEachMovie.forEach(movie => {
-            first5kElementsOfEachMovie.push(movie);
-        });
-
-        return first5kElementsOfEachMovie;
+        // sort duplicates/non duplicates and flatten/concat into one array
+        return [].concat.apply([], [duplicates, nonDuplicates].map(ascendingSort));
     }
 
 </script>
