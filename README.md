@@ -1,31 +1,38 @@
 # Movies Recommendation System
 
 ## How to run
+
 Just open the browser, search movies, and rate at least 2 movies. <br />
 Calculate button will propose movies based on Pearson correlation coefficient.
 
 ## Basic Implementation
-User is able to search a movie only by typing alphanumerical. Only english letters and non-special characters are allowed.<br />
+
+User is able to search a movie only by typing alphanumerical. Only english letters and non-special characters are
+allowed.<br />
 User must type at least 3 characters.<br />
 User must rate at least 2 movies and maximum 5 movies.<br />
-User is able to re-rate the same movies but not more than 5. In case user tries to rate a 6th movie, an alert message will be appeared in the screen.<br />
+User is able to re-rate the same movies but not more than 5. In case user tries to rate a 6th movie, an alert message
+will be appeared in the screen.<br />
 Calculation button once is clicked, it gets disabled. Need to re-rate to be enabled again.<br />
 In order for the algorithm to recommend movies, there must be users that have been scored with >= 0.7 pearson.<br />
 If none filtered user found with more than 0.7 pearson, alert message will be appeared in the screen.<br />
 
 ## Pearson Implementation
-1)retrieve the rating dataset.<br />
-2)push every nested array to one array that contains all movie ratings.<br />
-3)Sort userId on ASC order.<br />
-4)create a map of userId and count(rating) from this sorted array in this format: --> userId: count(rating)<br />
-5)keeping 5.000 unique userIds of those who have been rated the same or -1 from the total size.<br />
-6)keeping only the duplicate userIds, because the user must rate at least 2 movies.<br />
-7)Creating custom object: userId: { movieRating: [{movieId: rating}] }.<br />
-8)using reduce function in the arrayOfUserMovieRatedFromInput to have this format: movieId: rating.<br />
-9)comparing the whole dataset with my review('geokall') with every compared user and keeping recommended movies from maximum 5 users.<br />
-10)alert if none filtered user fetched with more than 0.7 pearson.<br />
-11)for every pearson score > 0.7 user, we'll get their movies and keep 3 random movies whose rating is more than 3.<br />
-12)getting movie informations and show the table with these movies.<br />
+
+1. Retrieve the rating dataset from the external API.<br />
+2. Push every nested array to one array that contains all movie ratings.<br />
+3. Sort userId by ASC order.<br />
+4. Create a map of userId and count (rating) from this sorted array in this format: --> userId: count(rating)<br />
+5. Keeping 5.000 unique userIds of those who have been rated the same or -1 from the total size.<br />
+6. Keeping only the duplicate userIds, because the user must rate at least 2 movies.<br />
+7. Creating custom object: userId: { movieRating: [{movieId: rating}] }.<br />
+8. Using reduce function in the arrayOfUserMovieRatedFromInput to have this format: movieId: rating.<br />
+9. Comparing the whole dataset with my review ('geokall') and with every compared user while keeping recommended movies
+   from
+   maximum 5 users.<br />
+10. Show alert in case none filtered users, fetched with more than 0.7 pearson score.<br />
+11. For every pearson score that is > 0.7, 3 random movies are selected.<br />
+12. Getting movie information and show the table with these movies.<br />
 
 ## Credits
 
