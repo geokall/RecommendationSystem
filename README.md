@@ -2,10 +2,10 @@
 
 ## How to run
 
-Just open the browser, search movies, and rate at least 2 movies. <br />
+Just open your favourite browser, search movies, and rate at least 2 movies. <br />
 Calculate button will propose movies based on Pearson correlation coefficient.
 
-## Basic Implementation
+## How it works
 
 User is able to search a movie only by typing alphanumerical. Only english letters and non-special characters are
 allowed.<br />
@@ -17,7 +17,7 @@ Calculation button once is clicked, it gets disabled. Need to re-rate to be enab
 In order for the algorithm to recommend movies, there must be users that have been scored with >= 0.7 pearson.<br />
 If none filtered user found with more than 0.7 pearson, alert message will be appeared in the screen.<br />
 
-## Pearson Implementation
+## Pearson Correlation Coefficient implementation
 
 1. Retrieve the rating dataset from the external API.<br />
 2. Push every nested array to one array that contains all movie ratings.<br />
